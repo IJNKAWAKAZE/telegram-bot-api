@@ -1,3 +1,3 @@
-module telegram-bot-api
+module github.com/IJNKAWAKAZE/telegram-bot-api
 
 go 1.21
