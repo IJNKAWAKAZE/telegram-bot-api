@@ -985,3 +985,8 @@ func ValidateWebAppData(token, telegramInitData string) (bool, error) {
 
 	return true, nil
 }
+
+func (m *Message) delete() (Message, error) {
+	delMsg := NewDeleteMessage(m.Chat.ID, m.MessageID)
+	return b.Send(delMsg)
+}

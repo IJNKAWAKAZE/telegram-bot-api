@@ -239,6 +239,19 @@ func (u *User) String() string {
 	return name
 }
 
+func (u *User) FullName() string {
+	if u == nil {
+		return ""
+	}
+
+	name := u.FirstName
+	if u.LastName != "" {
+		name += " " + u.LastName
+	}
+
+	return name
+}
+
 // Chat represents a chat.
 type Chat struct {
 	// ID is a unique identifier for this chat

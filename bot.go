@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+var b *BotAPI
+
 // HTTPClient is the type needed for the bot to perform HTTP requests.
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -67,7 +69,7 @@ func NewBotAPIWithClient(token, apiEndpoint string, client HTTPClient) (*BotAPI,
 	}
 
 	bot.Self = self
-
+	b = bot
 	return bot, nil
 }
 
@@ -745,4 +747,18 @@ func EscapeText(parseMode string, text string) string {
 	}
 
 	return replacer.Replace(text)
+}
+
+func (bot *BotAPI) IsAdmin(chatId, userId int64) bool {
+	getChatMemberConfig := GetChatMemberConfig{
+		ChatConfigWithUser: ChatConfigWithUser{
+			ChatID: chatId,
+			UserID: userId,
+		},
+	}
+	memberInfo, _ := bot.GetChatMember(getChatMemberConfig)
+	if memberInfo.Status != "creator" && memberInfo.Status != "administrator" {
+		return false
+	}
+	return true
 }
