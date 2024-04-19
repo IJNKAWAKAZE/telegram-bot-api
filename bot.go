@@ -762,3 +762,31 @@ func (bot *BotAPI) IsAdmin(chatId, userId int64) bool {
 	}
 	return true
 }
+
+func (bot *BotAPI) RestrictChatMember(charId, userId int64, t string) (*APIResponse, error) {
+	permissions := &ChatPermissions{}
+	if t == NoMessagesPermission {
+		permissions = &ChatPermissions{
+			CanSendMessages: false,
+		}
+	} else if t == AllPermissions {
+		permissions = &ChatPermissions{
+			CanSendMessages:       true,
+			CanSendMediaMessages:  true,
+			CanSendPolls:          true,
+			CanSendOtherMessages:  true,
+			CanAddWebPagePreviews: true,
+			CanInviteUsers:        true,
+			CanChangeInfo:         true,
+			CanPinMessages:        true,
+		}
+	}
+	restrictChatMemberConfig := RestrictChatMemberConfig{
+		Permissions: permissions,
+		ChatMemberConfig: ChatMemberConfig{
+			ChatID: charId,
+			UserID: userId,
+		},
+	}
+	return bot.Request(restrictChatMemberConfig)
+}

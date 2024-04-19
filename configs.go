@@ -95,8 +95,8 @@ const (
 )
 
 const (
-	MessagesPermission = "messagesPermission"
-	AllPermissions     = "allPermissions"
+	NoMessagesPermission = "noMessagesPermission"
+	AllPermissions       = "allPermissions"
 )
 
 // Library errors
