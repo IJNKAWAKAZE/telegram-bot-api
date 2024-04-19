@@ -252,6 +252,34 @@ func (u *User) FullName() string {
 	return name
 }
 
+func (u *User) RestrictChatMember(charId int64, t string) (*APIResponse, error) {
+	permissions := &ChatPermissions{}
+	if t == MessagesPermission {
+		permissions = &ChatPermissions{
+			CanSendMessages: false,
+		}
+	} else if t == AllPermissions {
+		permissions = &ChatPermissions{
+			CanSendMessages:       true,
+			CanSendMediaMessages:  true,
+			CanSendPolls:          true,
+			CanSendOtherMessages:  true,
+			CanAddWebPagePreviews: true,
+			CanInviteUsers:        true,
+			CanChangeInfo:         true,
+			CanPinMessages:        true,
+		}
+	}
+	restrictChatMemberConfig := RestrictChatMemberConfig{
+		Permissions: permissions,
+		ChatMemberConfig: ChatMemberConfig{
+			ChatID: charId,
+			UserID: u.ID,
+		},
+	}
+	return b.Request(restrictChatMemberConfig)
+}
+
 // Chat represents a chat.
 type Chat struct {
 	// ID is a unique identifier for this chat

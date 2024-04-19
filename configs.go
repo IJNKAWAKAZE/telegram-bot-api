@@ -94,6 +94,11 @@ const (
 	UpdateTypeChatMember = "chat_member"
 )
 
+const (
+	MessagesPermission = "messagesPermission"
+	AllPermissions     = "allPermissions"
+)
+
 // Library errors
 const (
 	ErrBadURL = "bad or empty url"
