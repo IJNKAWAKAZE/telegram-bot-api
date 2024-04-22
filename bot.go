@@ -14,8 +14,6 @@ import (
 	"time"
 )
 
-var b *BotAPI
-
 // HTTPClient is the type needed for the bot to perform HTTP requests.
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -747,46 +745,4 @@ func EscapeText(parseMode string, text string) string {
 	}
 
 	return replacer.Replace(text)
-}
-
-func (bot *BotAPI) IsAdmin(chatId, userId int64) bool {
-	getChatMemberConfig := GetChatMemberConfig{
-		ChatConfigWithUser: ChatConfigWithUser{
-			ChatID: chatId,
-			UserID: userId,
-		},
-	}
-	memberInfo, _ := bot.GetChatMember(getChatMemberConfig)
-	if memberInfo.Status != "creator" && memberInfo.Status != "administrator" {
-		return false
-	}
-	return true
-}
-
-func (bot *BotAPI) RestrictChatMember(charId, userId int64, t string) (*APIResponse, error) {
-	permissions := &ChatPermissions{}
-	if t == NoMessagesPermission {
-		permissions = &ChatPermissions{
-			CanSendMessages: false,
-		}
-	} else if t == AllPermissions {
-		permissions = &ChatPermissions{
-			CanSendMessages:       true,
-			CanSendMediaMessages:  true,
-			CanSendPolls:          true,
-			CanSendOtherMessages:  true,
-			CanAddWebPagePreviews: true,
-			CanInviteUsers:        true,
-			CanChangeInfo:         true,
-			CanPinMessages:        true,
-		}
-	}
-	restrictChatMemberConfig := RestrictChatMemberConfig{
-		Permissions: permissions,
-		ChatMemberConfig: ChatMemberConfig{
-			ChatID: charId,
-			UserID: userId,
-		},
-	}
-	return bot.Request(restrictChatMemberConfig)
 }

@@ -985,21 +985,3 @@ func ValidateWebAppData(token, telegramInitData string) (bool, error) {
 
 	return true, nil
 }
-
-func (m *Message) Delete() (Message, error) {
-	delMsg := NewDeleteMessage(m.Chat.ID, m.MessageID)
-	return b.Send(delMsg)
-}
-
-func (c *CallbackQuery) Delete() (Message, error) {
-	delMsg := NewDeleteMessage(c.Message.Chat.ID, c.Message.MessageID)
-	return b.Send(delMsg)
-}
-
-func (c *CallbackQuery) Answer(showAlert bool, text string) (Message, error) {
-	answer := NewCallback(c.ID, text)
-	if showAlert {
-		answer = NewCallbackWithAlert(c.ID, text)
-	}
-	return b.Send(answer)
-}
