@@ -20,6 +20,7 @@ type Bot struct {
 	commandProcessor        map[string]callbackFunction
 	privateCommandProcessor map[string]callbackFunction
 	photoCommandProcess     map[string]callbackFunction
+	replyCommandProcess     map[string]callbackFunction
 	inlineQueryProcess      []*inlineMatcher
 	callbackQueryProcess    map[string]callbackFunction
 	waitMsgProcess          map[string]callbackFunction
@@ -33,6 +34,7 @@ func (b *Bot) InitMap() {
 	b.privateCommandProcessor = make(map[string]callbackFunction)
 	b.waitMsgProcess = make(map[string]callbackFunction)
 	b.photoCommandProcess = make(map[string]callbackFunction)
+	b.replyCommandProcess = make(map[string]callbackFunction)
 }
 
 type callbackFunction = func(update Update) error
@@ -91,6 +93,11 @@ func (b *Bot) NewPhotoMessageProcessor(command string, processor func(update Upd
 	b.addProcessor(command, processor, b.photoCommandProcess)
 }
 
+func (b *Bot) NewReplyMessageProcessor(command string, processor func(update Update) error) {
+
+	b.addProcessor(command, processor, b.replyCommandProcess)
+}
+
 func (b *Bot) NewInlineQueryProcessor(command string, processor callbackFunction) {
 	b.inlineQueryProcess = append(b.inlineQueryProcess, &inlineMatcher{
 		prefix:    command,
@@ -130,6 +137,16 @@ func (bot *Bot) selectFunction(msg Update) (callbackFunction, string) {
 			command, _ := strings.CutSuffix(msg.Message.Caption, suffix)
 			command = strings.Split(command, " ")[0]
 			result, ok := bot.photoCommandProcess[command]
+			if ok {
+				return result, command
+			}
+		}
+		if msg.Message.ReplyToMessage != nil {
+			me, _ := b.GetMe()
+			suffix := "@" + me.UserName
+			command, _ := strings.CutSuffix(msg.Message.Text, suffix)
+			command = strings.Split(command, " ")[0]
+			result, ok := bot.replyCommandProcess[command]
 			if ok {
 				return result, command
 			}
