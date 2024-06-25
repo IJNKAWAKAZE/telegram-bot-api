@@ -229,6 +229,9 @@ func (bot *Bot) Run() {
 
 // IsAdmin 是否是创建者或管理员
 func (bot *BotAPI) IsAdmin(chatId, userId int64) bool {
+	return IsAdminWithPermissions(chatId, userId, 0);
+}
+func (bot *BotAPI) IsAdminWithPermissions(chatId, userId int64, requiredPermissions uint16) bool {
 	getChatMemberConfig := GetChatMemberConfig{
 		ChatConfigWithUser: ChatConfigWithUser{
 			ChatID: chatId,
@@ -236,10 +239,66 @@ func (bot *BotAPI) IsAdmin(chatId, userId int64) bool {
 		},
 	}
 	memberInfo, _ := bot.GetChatMember(getChatMemberConfig)
-	if memberInfo.Status != "creator" && memberInfo.Status != "administrator" {
-		return false
+	if memberInfo.Status == "creator" {
+		return true
+	} else if memberInfo.Status == "administrator" {
+		if requiredPermissions==0{
+			return true
+		}
+		adminPermission := convertAdminRightToInt(memberInfo)
+		if adminPermission&requiredPermissions == requiredPermissions {
+			return true
+		}
 	}
-	return true
+	return false
+}
+const (
+	AdminIsAnonymous = 1 << iota
+	AdminCanManageChat
+	AdminCanDeleteMessages
+	AdminCanManageVideoChats
+	AdminCanRestrictMembers
+	AdminCanPromoteMembers
+	AdminCanChangeInfo
+	AdminCanInviteUsers
+	AdminCanPostMessages
+	AdminCanEditMessages
+	AdminCanPinMessages
+)
+
+func convertAdminRightToInt(chatmember tgbotapi.ChatMember) uint16 {
+	var result = uint16(0)
+	if chatmember.CanManageChat {
+		result |= AdminCanManageChat
+	}
+	if chatmember.CanDeleteMessages {
+		result |= AdminCanDeleteMessages
+	}
+	if chatmember.CanManageVideoChats {
+		result |= AdminCanManageVideoChats
+	}
+	if chatmember.CanRestrictMembers {
+		result |= AdminCanRestrictMembers
+	}
+	if chatmember.CanPromoteMembers {
+		result |= AdminCanPromoteMembers
+	}
+	if chatmember.CanChangeInfo {
+		result |= AdminCanChangeInfo
+	}
+	if chatmember.CanInviteUsers {
+		result |= AdminCanInviteUsers
+	}
+	if chatmember.CanPostMessages {
+		result |= AdminCanPostMessages
+	}
+	if chatmember.CanEditMessages {
+		result |= AdminCanEditMessages
+	}
+	if chatmember.CanPinMessages {
+		result |= AdminCanPinMessages
+	}
+	return result
 }
 
 // RestrictChatMember 修改用户权限
