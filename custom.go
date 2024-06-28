@@ -229,8 +229,10 @@ func (bot *Bot) Run() {
 
 // IsAdmin 是否是创建者或管理员
 func (bot *BotAPI) IsAdmin(chatId, userId int64) bool {
-	return IsAdminWithPermissions(chatId, userId, 0);
+	return bot.IsAdminWithPermissions(chatId, userId, 0)
 }
+
+// IsAdminWithPermissions 权限检查
 func (bot *BotAPI) IsAdminWithPermissions(chatId, userId int64, requiredPermissions uint16) bool {
 	getChatMemberConfig := GetChatMemberConfig{
 		ChatConfigWithUser: ChatConfigWithUser{
@@ -242,7 +244,7 @@ func (bot *BotAPI) IsAdminWithPermissions(chatId, userId int64, requiredPermissi
 	if memberInfo.Status == "creator" {
 		return true
 	} else if memberInfo.Status == "administrator" {
-		if requiredPermissions==0{
+		if requiredPermissions == 0 {
 			return true
 		}
 		adminPermission := convertAdminRightToInt(memberInfo)
@@ -252,6 +254,7 @@ func (bot *BotAPI) IsAdminWithPermissions(chatId, userId int64, requiredPermissi
 	}
 	return false
 }
+
 const (
 	AdminIsAnonymous = 1 << iota
 	AdminCanManageChat
@@ -266,36 +269,36 @@ const (
 	AdminCanPinMessages
 )
 
-func convertAdminRightToInt(chatmember tgbotapi.ChatMember) uint16 {
+func convertAdminRightToInt(chatMember ChatMember) uint16 {
 	var result = uint16(0)
-	if chatmember.CanManageChat {
+	if chatMember.CanManageChat {
 		result |= AdminCanManageChat
 	}
-	if chatmember.CanDeleteMessages {
+	if chatMember.CanDeleteMessages {
 		result |= AdminCanDeleteMessages
 	}
-	if chatmember.CanManageVideoChats {
+	if chatMember.CanManageVideoChats {
 		result |= AdminCanManageVideoChats
 	}
-	if chatmember.CanRestrictMembers {
+	if chatMember.CanRestrictMembers {
 		result |= AdminCanRestrictMembers
 	}
-	if chatmember.CanPromoteMembers {
+	if chatMember.CanPromoteMembers {
 		result |= AdminCanPromoteMembers
 	}
-	if chatmember.CanChangeInfo {
+	if chatMember.CanChangeInfo {
 		result |= AdminCanChangeInfo
 	}
-	if chatmember.CanInviteUsers {
+	if chatMember.CanInviteUsers {
 		result |= AdminCanInviteUsers
 	}
-	if chatmember.CanPostMessages {
+	if chatMember.CanPostMessages {
 		result |= AdminCanPostMessages
 	}
-	if chatmember.CanEditMessages {
+	if chatMember.CanEditMessages {
 		result |= AdminCanEditMessages
 	}
-	if chatmember.CanPinMessages {
+	if chatMember.CanPinMessages {
 		result |= AdminCanPinMessages
 	}
 	return result
