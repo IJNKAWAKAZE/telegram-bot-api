@@ -357,6 +357,40 @@ func (bot *BotAPI) UnbanChatMember(chatId, userId int64) (*APIResponse, error) {
 	return bot.Request(unbanChatMemberConfig)
 }
 
+const (
+	CREATOR = iota
+	ADMINISTRATOR
+	RESTRICTED
+	LEFT
+	MEMBER
+	KICKED
+	UNKNOWN
+)
+
+// GetChatMemberStatus 获取用户的群组状态
+func (bot *BotAPI) GetChatMemberStatus(chatId, userId int64) int {
+	config := GetChatMemberConfig{
+		ChatConfigWithUser{ChatID: chatId, UserID: userId},
+	}
+	member, _ := bot.GetChatMember(config)
+	switch member.Status {
+	case "creator":
+		return CREATOR
+	case "administrator":
+		return ADMINISTRATOR
+	case "restricted":
+		return RESTRICTED
+	case "left":
+		return LEFT
+	case "member":
+		return MEMBER
+	case "kicked":
+		return KICKED
+	default:
+		return UNKNOWN
+	}
+}
+
 // FullName 获取用户全名
 func (u *User) FullName() string {
 	if u == nil {
