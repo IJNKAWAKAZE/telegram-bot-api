@@ -74,7 +74,6 @@ func (b *Bot) NewCallBackProcessor(callBackType string, processor func(update Up
 }
 
 func (b *Bot) NewCommandProcessor(command string, processor func(update Update) error) {
-
 	b.addProcessor(command, processor, b.commandProcessor)
 }
 
@@ -122,6 +121,13 @@ func recoverWarp(function callbackFunction) callbackFunction {
 		return function(msg)
 	}
 }
+
+func (Bot *Bot) checkSuffix(command string) (string, bool) {
+	me, _ := b.GetMe()
+	suffix := "@" + me.UserName
+	commands := strings.Split(command, " ")
+	return  strings.CutSuffix(commands[0],suffix)
+}
 func (bot *Bot) selectFunction(msg Update) (callbackFunction, string) {
 	// generic first
 	for _, k := range bot.matchProcessorSlice {
@@ -132,28 +138,32 @@ func (bot *Bot) selectFunction(msg Update) (callbackFunction, string) {
 	if msg.Message != nil {
 		//photo related cmd
 		if len(msg.Message.Photo) > 0 {
-			me, _ := b.GetMe()
-			suffix := "@" + me.UserName
-			command, _ := strings.CutSuffix(msg.Message.Caption, suffix)
-			command = strings.Split(command, " ")[0]
-			result, ok := bot.photoCommandProcess[command]
-			if ok {
-				return result, command
+			command_with_p := strings.Split(msg.Message.Caption," ")
+			if len(command_with_p) !=0 {
+				command,is_me := bot.checkSuffix(command_with_p[0])
+				if is_me{
+					result, ok := bot.photoCommandProcess[command]
+					if ok {
+						return result, command
+					}
+				}
 			}
 		}
 		if msg.Message.ReplyToMessage != nil {
-			me, _ := b.GetMe()
-			suffix := "@" + me.UserName
-			command, _ := strings.CutSuffix(msg.Message.Text, suffix)
-			command = strings.Split(command, " ")[0]
-			result, ok := bot.replyCommandProcess[command]
-			if ok {
-				return result, command
+			command,is_me := bot.checkSuffix(msg.Message.CommandWithAt())
+			if is_me{
+				result, ok := bot.replyCommandProcess[command]
+				if ok {
+					return result, command
+				}
 			}
 		}
 		//private cmd
-		command := msg.Message.Command()
+		command := msg.Message.CommandWithAt()
+		var is_private = false;
 		if msg.Message.Chat.IsPrivate() {
+			is_private = true
+			command,_ = bot.checkSuffix(command)
 			result, ok := bot.privateCommandProcessor[command]
 			if ok {
 				return result, command
@@ -167,9 +177,13 @@ func (bot *Bot) selectFunction(msg Update) (callbackFunction, string) {
 			}
 		}
 		//normal command
-		result, ok := bot.commandProcessor[command]
-		if ok {
-			return result, command
+
+		the_command,is_me := bot.checkSuffix(command)
+		if is_me || is_private{
+			result, ok := bot.commandProcessor[the_command]
+			if ok {
+				return result, the_command
+			}
 		}
 	}
 	// callback
