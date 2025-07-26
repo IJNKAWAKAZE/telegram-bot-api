@@ -21,9 +21,10 @@ type HTTPClient interface {
 
 // BotAPI allows you to interact with the Telegram Bot API.
 type BotAPI struct {
-	Token  string `json:"token"`
-	Debug  bool   `json:"debug"`
-	Buffer int    `json:"buffer"`
+	Token                   string `json:"token"`
+	Debug                   bool   `json:"debug"`
+	Buffer                  int    `json:"buffer"`
+	EnableDelChannelMessage bool   `json:"enable_del_channel_message"` //启用删除来自频道的消息
 
 	Self            User       `json:"-"`
 	Client          HTTPClient `json:"-"`
