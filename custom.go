@@ -1,6 +1,7 @@
 package tgbotapi
 
 import (
+	"github.com/ijnkawakaze/telegram-bot-api/CallBackV2"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -69,8 +70,7 @@ func (b *Bot) LeftMemberProcessor(processor func(update Update) error) {
 }
 
 func (b *Bot) NewCallBackProcessor(callBackType string, processor func(update Update) error) {
-
-	b.addProcessor(callBackType, processor, b.callbackQueryProcess)
+	CallBackV2.RegisterStatic()
 }
 
 func (b *Bot) NewCommandProcessor(command string, processor func(update Update) error) {
@@ -174,11 +174,7 @@ func (bot *Bot) selectFunction(msg Update) (callbackFunction, string) {
 	}
 	// callback
 	if msg.CallbackQuery != nil {
-		callback_q := strings.Split(msg.CallbackData(), ",")[0]
-		result, ok := bot.callbackQueryProcess[callback_q]
-		if ok {
-			return result, ""
-		}
+		return CallBackV2.Handler, "  "
 	}
 	//inline Q
 	if msg.InlineQuery != nil {
@@ -198,6 +194,7 @@ func (_ *BotAPI) AddHandle() *Bot {
 }
 
 func (bot *Bot) Run() {
+	_ = CallBackV2.Init(nil)
 	u := NewUpdate(0)
 	u.Timeout = 60
 	updates := b.GetUpdatesChan(u)
