@@ -1,4 +1,4 @@
-package tgbotapi
+package Log
 
 import (
 	"errors"
@@ -24,4 +24,7 @@ func SetLogger(logger BotLogger) error {
 	}
 	log = logger
 	return nil
+}
+func GetLogger() *BotLogger {
+	return &log
 }

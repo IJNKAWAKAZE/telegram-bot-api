@@ -3,9 +3,9 @@ package callback
 import (
 	"errors"
 	"github.com/google/uuid"
-	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	"github.com/ijnkawakaze/telegram-bot-api/CallBackV2/internal/Timer"
 	"github.com/ijnkawakaze/telegram-bot-api/CallBackV2/internal/utils"
+	tgbotapi "github.com/ijnkawakaze/telegram-bot-api/Types"
 	"strconv"
 	"strings"
 	"sync"

@@ -1,11 +1,12 @@
 // Package tgbotapi has functions and types used for interacting with
 // the Telegram Bot API.
-package tgbotapi
+package Types
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ijnkawakaze/telegram-bot-api/Log"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 	"strings"
 	"time"
 )
+
+var logger = *(Log.GetLogger())
 
 // HTTPClient is the type needed for the bot to perform HTTP requests.
 type HTTPClient interface {
@@ -67,7 +70,6 @@ func NewBotAPIWithClient(token, apiEndpoint string, client HTTPClient) (*BotAPI,
 	}
 
 	bot.Self = self
-	b = bot
 	return bot, nil
 }
 
@@ -93,7 +95,7 @@ func buildParams(in Params) url.Values {
 // MakeRequest makes a request to a specific endpoint with our token.
 func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, error) {
 	if bot.Debug {
-		log.Printf("Endpoint: %s, params: %v\n", endpoint, params)
+		logger.Printf("Endpoint: %s, params: %v\n", endpoint, params)
 	}
 
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
@@ -119,7 +121,7 @@ func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, er
 	}
 
 	if bot.Debug {
-		log.Printf("Endpoint: %s, response: %s\n", endpoint, string(bytes))
+		logger.Printf("Endpoint: %s, response: %s\n", endpoint, string(bytes))
 	}
 
 	if !apiResp.Ok {
@@ -218,7 +220,7 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 	}()
 
 	if bot.Debug {
-		log.Printf("Endpoint: %s, params: %v, with %d files\n", endpoint, params, len(files))
+		logger.Printf("Endpoint: %s, params: %v, with %d files\n", endpoint, params, len(files))
 	}
 
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
@@ -243,7 +245,7 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 	}
 
 	if bot.Debug {
-		log.Printf("Endpoint: %s, response: %s\n", endpoint, string(bytes))
+		logger.Printf("Endpoint: %s, response: %s\n", endpoint, string(bytes))
 	}
 
 	if !apiResp.Ok {
@@ -441,8 +443,8 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 
 			updates, err := bot.GetUpdates(config)
 			if err != nil {
-				log.Println(err)
-				log.Println("Failed to get updates, retrying in 3 seconds...")
+				logger.Println(err)
+				logger.Println("Failed to get updates, retrying in 3 seconds...")
 				time.Sleep(time.Second * 3)
 
 				continue
@@ -463,7 +465,7 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 // StopReceivingUpdates stops the go routine which receives updates
 func (bot *BotAPI) StopReceivingUpdates() {
 	if bot.Debug {
-		log.Println("Stopping the update receiver routine...")
+		logger.Println("Stopping the update receiver routine...")
 	}
 	close(bot.shutdownChannel)
 }

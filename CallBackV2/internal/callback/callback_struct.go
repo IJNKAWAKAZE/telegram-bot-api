@@ -2,8 +2,8 @@ package callback
 
 import (
 	"github.com/google/uuid"
-	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
 	"github.com/ijnkawakaze/telegram-bot-api/CallBackV2/internal/utils"
+	tgbotapi "github.com/ijnkawakaze/telegram-bot-api/Types"
 	"sync"
 )
 

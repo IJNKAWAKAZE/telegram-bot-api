@@ -2,7 +2,7 @@ package callback
 
 import (
 	"github.com/google/uuid"
-	tgbotapi "github.com/ijnkawakaze/telegram-bot-api"
+	tgbotapi "github.com/ijnkawakaze/telegram-bot-api/Types"
 	"strconv"
 	"strings"
 )
