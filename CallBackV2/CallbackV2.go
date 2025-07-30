@@ -27,9 +27,9 @@ func RegisterCustomTimeOut(maker Maker, timeOutDuration time.Duration) (uuid.UUI
 	return callback.RegisterCallbackCustomTimeOut(maker, timeOutDuration)
 }
 
-func RegisterStatic(prefix string, callbackFunction StaticFunction) (string, error) {
+func RegisterStatic(prefix string, callbackFunction StaticFunction) error {
 	return callback.RegisterStaticCallback(prefix, callbackFunction.ToLegacyFunction())
 }
-func RegisterStaticLegacy(prefix string, callbackFunction callback.LegacyStaticCallbackFunction) (string, error) {
+func RegisterStaticLegacy(prefix string, callbackFunction callback.LegacyStaticCallbackFunction) error {
 	return callback.RegisterStaticCallback(prefix, callbackFunction)
 }

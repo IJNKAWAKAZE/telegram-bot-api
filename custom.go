@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-var b *Types.BotAPI
 var logger = *Log.GetLogger()
 var WaitMessage = make(map[int64]interface{})
 
@@ -68,7 +67,7 @@ func (b *Bot) LeftMemberProcessor(processor func(update Types.Update) error) {
 }
 
 func (b *Bot) NewCallBackProcessor(callBackType string, processor func(update Types.Update) error) {
-	CallBackV2.RegisterStatic()
+	_ = CallBackV2.RegisterStaticLegacy(callBackType, processor)
 }
 
 func (b *Bot) NewCommandProcessor(command string, processor func(update Types.Update) error) {
@@ -130,7 +129,7 @@ func (bot *Bot) selectFunction(msg Types.Update) (callbackFunction, string) {
 	if msg.Message != nil {
 		//photo related cmd
 		if len(msg.Message.Photo) > 0 {
-			me, _ := b.GetMe()
+			me, _ := bot.api.GetMe()
 			suffix := "@" + me.UserName
 			command, _ := strings.CutSuffix(msg.Message.Caption, suffix)
 			command = strings.Split(command, " ")[0]
@@ -140,7 +139,7 @@ func (bot *Bot) selectFunction(msg Types.Update) (callbackFunction, string) {
 			}
 		}
 		if msg.Message.ReplyToMessage != nil {
-			me, _ := b.GetMe()
+			me, _ := bot.api.GetMe()
 			suffix := "@" + me.UserName
 			command, _ := strings.CutSuffix(msg.Message.Text, suffix)
 			command = strings.Split(command, " ")[0]
@@ -195,7 +194,7 @@ func (bot *Bot) Run() {
 	_ = CallBackV2.Init(nil)
 	u := Types.NewUpdate(0)
 	u.Timeout = 60
-	updates := b.GetUpdatesChan(u)
+	updates := bot.api.GetUpdatesChan(u)
 	if updates == nil {
 		panic("updates is nil")
 	}
@@ -205,7 +204,7 @@ func (bot *Bot) Run() {
 			continue
 		}
 		if msg.Message != nil && msg.Message.IsCommand() && msg.Message.From.ID == 136817688 {
-			msg.Message.Delete()
+			msg.Message.Delete(bot.api)
 			continue
 		}
 

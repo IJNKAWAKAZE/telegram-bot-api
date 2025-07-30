@@ -19,6 +19,7 @@ var uuidMapper = make(map[uuid.UUID]*callbackV2)
 var staticMapper = make(map[string]LegacyStaticCallbackFunction)
 
 const DEFAULT_TIMEOUT = time.Minute
+const UUID_LENGTH = 36
 
 var EMPTY_MARKUP = tgbotapi.InlineKeyboardMarkup{make([][]tgbotapi.InlineKeyboardButton, 0)}
 
@@ -55,12 +56,14 @@ func RegisterCallback(selection CallBackV2Maker) (uuid.UUID, tgbotapi.InlineKeyb
 	return RegisterCallbackCustomTimeOut(selection, DEFAULT_TIMEOUT)
 }
 
-func RegisterStaticCallback(prefix string, callbackFunction LegacyStaticCallbackFunction) (string, error) {
-	if utils.MapContain(staticMapper, prefix) {
-		return "", errors.New("prefix has already been registered")
+func RegisterStaticCallback(prefix string, callbackFunction LegacyStaticCallbackFunction) error {
+	if len(prefix) >= UUID_LENGTH {
+		return errors.New("prefix too long")
+	} else if utils.MapContain(staticMapper, prefix) {
+		return errors.New("prefix has already been registered")
 	} else {
 		staticMapper[prefix] = callbackFunction
-		return "s," + prefix, nil
+		return nil
 	}
 }
 func RegisterCallbackCustomTimeOut(selection CallBackV2Maker, timeOutDuration time.Duration) (uuid.UUID, tgbotapi.InlineKeyboardMarkup, error) {
@@ -78,20 +81,23 @@ func RegisterCallbackCustomTimeOut(selection CallBackV2Maker, timeOutDuration ti
 }
 func CallBackHandler(update tgbotapi.Update) error {
 	query := strings.Split(update.CallbackQuery.Data, ",")
-	if len(query) < 2 {
-		return errors.New("invalid callback query")
+	if len(query) < 1 {
+		return errors.New("invalid callback query : Empty CallbackQuery")
 	}
-	if query[0] == "s" {
+	if len(query[0]) != UUID_LENGTH {
 		//static query
-		return handleStaticQuery(update, query[1])
+		return handleStaticQuery(update, query[0])
 	} else {
 		// dynamic query
+		if len(query) != 2 {
+			return errors.New("invalid DynamicCallbackQuery: wrong length")
+		}
 		return handleDynamicQuery(update.CallbackQuery, query)
 	}
 }
 func handleStaticQuery(query tgbotapi.Update, queryPrefix string) error {
 	if !utils.MapContain(staticMapper, queryPrefix) {
-		return errors.New("prefix has not found")
+		return errors.New("invalid Static CallbackQuery : prefix has not found")
 	} else {
 		return staticMapper[queryPrefix](query)
 	}
@@ -100,23 +106,23 @@ func handleDynamicQuery(query *tgbotapi.CallbackQuery, queryS []string) error {
 	targetUUID, UUIDErr := uuid.Parse(queryS[0])
 	index, indexParseErr := strconv.Atoi(queryS[1])
 	if UUIDErr != nil {
-		return errors.New("invalid UUID In query It can not be parsed")
+		return errors.New("invalid DynamicCallbackQuery : UUID In query It can not be parsed")
 	}
 	if indexParseErr != nil {
-		return errors.New("invalid Integer In query")
+		return errors.New("invalid DynamicCallbackQuery : invalid Integer In query")
 	}
 	mutex.Lock()
 	defer mutex.Unlock()
 	if !utils.MapContain(uuidMapper, targetUUID) {
-		return errors.New("callback UUID Not Found")
+		return errors.New("invalid DynamicCallbackQuery : callback UUID Not Found")
 	}
 	targetCallback := uuidMapper[targetUUID]
 	if index >= len(targetCallback.callbackFunctions) {
-		return errors.New("callback Index Out of Range")
+		return errors.New("invalid DynamicCallbackQuery : callback Index Out of Range")
 	}
 	callbackFunction := targetCallback.callbackFunctions[index]
 	if callbackFunction == nil {
-		return errors.New("callback Function Not Found")
+		return errors.New("invalid DynamicCallbackQuery : callback Function Not Found")
 	}
 	done, err := callbackFunction(query, targetCallback)
 	if done {
