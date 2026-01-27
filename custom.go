@@ -1,6 +1,7 @@
 package tgbotapi
 
 import (
+	"encoding/json"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -59,6 +60,12 @@ func (b *Bot) NewProcessor(match func(Update) bool, processor func(update Update
 func (b *Bot) NewMemberProcessor(processor func(update Update) error) {
 	b.NewProcessor(func(update Update) bool {
 		return update.Message != nil && len(update.Message.NewChatMembers) > 0
+	}, processor)
+}
+
+func (b *Bot) JoinRequestProcessor(processor func(update Update) error) {
+	b.NewProcessor(func(update Update) bool {
+		return update.ChatJoinRequest != nil
 	}, processor)
 }
 
@@ -210,7 +217,8 @@ func (bot *Bot) Run() {
 			continue
 		}
 
-		if msg.Message != nil && msg.Message.IsCommand() && msg.Message.From.ID == 136817688 && b.IgnoreChannelCMD {
+		if msg.Message != nil && msg.Message.IsCommand() && msg.Message.From.ID == 136817688 && b.EnableDelChannelMessage {
+			msg.Message.Delete()
 			continue
 		}
 
@@ -357,6 +365,26 @@ func (bot *BotAPI) UnbanChatMember(chatId, userId int64) (*APIResponse, error) {
 	return bot.Request(unbanChatMemberConfig)
 }
 
+// ApproveChatJoinRequest 同意入群申请
+func (bot *BotAPI) ApproveChatJoinRequest(chatId, userId int64) (*APIResponse, error) {
+	approveChatJoinRequest := ApproveChatJoinRequestConfig{
+		ChatConfig: ChatConfig{
+			ChatID: chatId,
+		}, UserID: userId,
+	}
+	return bot.Request(approveChatJoinRequest)
+}
+
+// DeclineChatJoinRequest 拒绝入群申请
+func (bot *BotAPI) DeclineChatJoinRequest(chatId, userId int64) (*APIResponse, error) {
+	declineChatJoinRequest := DeclineChatJoinRequest{
+		ChatConfig: ChatConfig{
+			ChatID: chatId,
+		}, UserID: userId,
+	}
+	return bot.Request(declineChatJoinRequest)
+}
+
 const (
 	CREATOR = iota
 	ADMINISTRATOR
@@ -389,6 +417,20 @@ func (bot *BotAPI) GetChatMemberStatus(chatId, userId int64) int {
 	default:
 		return UNKNOWN
 	}
+}
+
+// GetChatInfo 获取群组或用户信息
+func (bot *BotAPI) GetChatInfo(chatId int64) (Chat, error) {
+	config := ChatInfoConfig{
+		ChatConfig: ChatConfig{ChatID: chatId},
+	}
+	resp, err := bot.Request(config)
+	if err != nil {
+		return Chat{}, err
+	}
+	var chat Chat
+	err = json.Unmarshal(resp.Result, &chat)
+	return chat, err
 }
 
 // FullName 获取用户全名
