@@ -2,6 +2,7 @@ package tgbotapi
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -2412,6 +2413,28 @@ func (config GetMyDefaultAdministratorRightsConfig) params() (Params, error) {
 
 	return params, nil
 }
+
+type ChatMemberTagConfig struct {
+	chatID int64
+	userID int64
+	tag    string
+}
+
+func NewChatMemberConfig(chat_id int64, user_id int64, tag string) (*ChatMemberTagConfig, error) {
+	if len(tag) > 16 {
+		return nil, errors.New("tag too long")
+	}
+	return &ChatMemberTagConfig{chat_id, user_id, tag}, nil
+}
+func (config ChatMemberTagConfig) params() (Params, error) {
+	params := make(Params)
+	params.AddFirstValid("chat_id", config.chatID)
+	params.AddNonZero64("user_id", config.userID)
+	params.AddFirstValid("tag", config.tag)
+	return params, nil
+}
+
+func (t ChatMemberTagConfig) method() string { return "setChatMemberTag" }
 
 // prepareInputMediaParam evaluates a single InputMedia and determines if it
 // needs to be modified for a successful upload. If it returns nil, then the
