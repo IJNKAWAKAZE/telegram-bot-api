@@ -2,7 +2,6 @@ package tgbotapi
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -1384,6 +1383,7 @@ type PromoteChatMemberConfig struct {
 	CanRestrictMembers  bool
 	CanPinMessages      bool
 	CanPromoteMembers   bool
+	CanManageTags       bool
 }
 
 func (config PromoteChatMemberConfig) method() string {
@@ -1407,6 +1407,7 @@ func (config PromoteChatMemberConfig) params() (Params, error) {
 	params.AddBool("can_restrict_members", config.CanRestrictMembers)
 	params.AddBool("can_pin_messages", config.CanPinMessages)
 	params.AddBool("can_promote_members", config.CanPromoteMembers)
+	params.AddBool("can_manage_tags", config.CanManageTags)
 
 	return params, nil
 }
@@ -2420,12 +2421,6 @@ type ChatMemberTagConfig struct {
 	tag    string
 }
 
-func NewChatMemberConfig(chat_id int64, user_id int64, tag string) (*ChatMemberTagConfig, error) {
-	if len(tag) > 16 {
-		return nil, errors.New("tag too long")
-	}
-	return &ChatMemberTagConfig{chat_id, user_id, tag}, nil
-}
 func (config ChatMemberTagConfig) params() (Params, error) {
 	params := make(Params)
 	params.AddFirstValid("chat_id", config.chatID)

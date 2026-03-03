@@ -2,6 +2,7 @@ package tgbotapi
 
 import (
 	"encoding/json"
+	"errors"
 	"runtime/debug"
 	"strings"
 	"time"
@@ -274,6 +275,7 @@ const (
 	AdminCanPostMessages
 	AdminCanEditMessages
 	AdminCanPinMessages
+	AdminCanManageTags
 )
 
 func convertAdminRightToInt(chatMember ChatMember) uint16 {
@@ -308,6 +310,9 @@ func convertAdminRightToInt(chatMember ChatMember) uint16 {
 	if chatMember.CanPinMessages {
 		result |= AdminCanPinMessages
 	}
+	if chatMember.CanManageTags {
+		result |= AdminCanManageTags
+	}
 	return result
 }
 
@@ -328,6 +333,7 @@ func (bot *BotAPI) RestrictChatMember(charId, userId int64, t string) (*APIRespo
 			CanInviteUsers:        true,
 			CanChangeInfo:         true,
 			CanPinMessages:        true,
+			CanEditTag:            true,
 		}
 	}
 	restrictChatMemberConfig := RestrictChatMemberConfig{
@@ -430,6 +436,19 @@ func (bot *BotAPI) GetChatInfo(chatId int64) (Chat, error) {
 	var chat Chat
 	err = json.Unmarshal(resp.Result, &chat)
 	return chat, err
+}
+
+// SetMemberTag 设置成员头衔
+func (bot *BotAPI) SetMemberTag(chatId int64, userId int64, tag string) (*APIResponse, error) {
+	chatMemberTagConfig := ChatMemberTagConfig{
+		chatID: chatId,
+		userID: userId,
+		tag:    tag,
+	}
+	if len(tag) > 16 {
+		return nil, errors.New("tag too long")
+	}
+	return bot.Request(chatMemberTagConfig)
 }
 
 // FullName 获取用户全名

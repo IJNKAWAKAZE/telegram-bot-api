@@ -372,6 +372,9 @@ type Message struct {
 	//
 	// optional
 	SenderChat *Chat `json:"sender_chat,omitempty"`
+	// SenderTag Tag or custom title of the sender of the message; for supergroups only
+	// optional
+	SenderTag string `json:"sender_tag,omitempty"`
 	// Date of the message was sent in Unix time
 	Date int `json:"date"`
 	// Chat is the conversation the message belongs to
@@ -1591,6 +1594,7 @@ type ChatAdministratorRights struct {
 	CanPostMessages     bool `json:"can_post_messages"`
 	CanEditMessages     bool `json:"can_edit_messages"`
 	CanPinMessages      bool `json:"can_pin_messages"`
+	CanManageTags       bool `json:"can_manage_tags"`
 }
 
 // ChatMember contains information about one member of a chat.
@@ -1661,6 +1665,10 @@ type ChatMember struct {
 	//
 	// optional
 	CanRestrictMembers bool `json:"can_restrict_members,omitempty"`
+	// CanManageTags administrators only.
+	// True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted defaults to the value of can_pin_messages.
+	// optional
+	CanManageTags bool `json:"can_manage_tags,omitempty"`
 	// CanPromoteMembers administrators only.
 	// True, if the administrator can add new administrators
 	// with a subset of their own privileges or demote administrators that he has promoted,
@@ -1711,6 +1719,10 @@ type ChatMember struct {
 	//
 	// optional
 	CanAddWebPagePreviews bool `json:"can_add_web_page_previews,omitempty"`
+	// CanEditTags restricted only.
+	// True, if the user is allowed to edit their own tag.
+	// optional
+	CanEditTags bool `json:"can_edit_tag,omitempty"`
 }
 
 // IsCreator returns if the ChatMember was the creator of the chat.
@@ -1806,6 +1818,9 @@ type ChatPermissions struct {
 	//
 	// optional
 	CanPinMessages bool `json:"can_pin_messages,omitempty"`
+	// CanEditTag is true, if the user is allowed to edit their own tag
+	// optional
+	CanEditTag bool `json:"can_edit_tag"`
 }
 
 // ChatLocation represents a location to which a chat is connected.
