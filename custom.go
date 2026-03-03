@@ -445,7 +445,7 @@ func (bot *BotAPI) SetMemberTag(chatId int64, userId int64, tag string) (*APIRes
 		userID: userId,
 		tag:    tag,
 	}
-	if len(tag) > 16 {
+	if len([]rune(tag)) > 16 {
 		return nil, errors.New("tag too long")
 	}
 	return bot.Request(chatMemberTagConfig)
